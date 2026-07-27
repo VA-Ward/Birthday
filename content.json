@@ -126,7 +126,7 @@
   },
   "closing": "Made by hand, for you.",
   "music": {
-    "url": "music.mp3",
+    "url": "music/music.mp3",
     "title": "Play music"
   }
 }
