@@ -194,11 +194,17 @@ button.danger{color:#E39;border-color:rgba(238,120,160,.35)}
       <div><label for="f-wish-lit">Line when the candle is lit</label><input id="f-wish-lit"></div>
       <div><label for="f-wish-done">Line after she blows it out</label><input id="f-wish-done"></div>
     </div>
+    <div class="drop" id="drop-music">Choose the song, or drag the file in here<input type="file" id="file-music" accept="audio/*" hidden></div>
+    <div id="music-status" class="hint" style="margin:.7rem 0 1rem"></div>
     <div class="row two">
-      <div><label for="f-music-url">Music file link (optional)</label><input id="f-music-url" placeholder="music/our-song.mp3"></div>
+      <div><label for="f-music-url">File in the repo</label><input id="f-music-url" placeholder="music/our-song.mp3"></div>
       <div><label for="f-music-title">Button label</label><input id="f-music-title" placeholder="Play our song"></div>
     </div>
-    <p class="warn">Only use a song you own a copy of, and upload the file to the repo yourself &mdash; put it in a <b>music</b> folder and write <b>music/our-song.mp3</b> above.</p>
+    <div class="actions" style="margin-bottom:.9rem">
+      <button class="tiny" id="test-music">Test this link</button>
+      <button class="tiny danger" id="clear-music">Remove the song</button>
+    </div>
+    <p class="warn">Only use a song you own a copy of. Drop the file above and it gets uploaded with everything else when you publish &mdash; you never need to touch GitHub. A Spotify or YouTube link will not work: those are web pages, not audio files.</p>
   </section>
 
   <!-- PUBLISH -->
@@ -222,7 +228,7 @@ var state=null;
 var els={};
 ["gh-owner","gh-repo","gh-branch","gh-token","remember","f-name","f-mono","f-eyebrow","f-birthday",
  "f-heroline","f-closing","f-reasons-title","f-greeting","f-signature","f-letter","f-reasons",
- "f-wish-lit","f-wish-done","f-music-url","f-music-title","photos","quotes","story","log","file","drop",
+ "f-wish-lit","f-wish-done","f-music-url","f-music-title","photos","quotes","story","log","file","drop","file-music","drop-music","music-status",
  "photo-count","quote-count","reason-count","story-count","draft-note"].forEach(function(id){
   els[id]=document.getElementById(id);
 });
@@ -486,6 +492,7 @@ document.getElementById("add-story").addEventListener("click",function(){
 /* ---------- draft + download ---------- */
 function clean(){
   var c=JSON.parse(JSON.stringify(collect()));
+  delete c._audio;
   c.photos=(c.photos||[]).map(function(p){
     return {src:p.src||"",motif:p.motif||"sprig",caption:p.caption||""};
   });
@@ -495,6 +502,7 @@ document.getElementById("save-draft").addEventListener("click",function(){
   collect(); store(LS_KEY,JSON.stringify(state)); saveConf();
   els["draft-note"].textContent="Draft saved "+new Date().toLocaleTimeString();
   log("Draft saved in this browser. Photos you have not published yet are kept too.","ok");
+  if(pendingAudio) log("The song is not kept in the draft \u2014 it is too big for that. Publish before you close the tab, or pick the file again next time.","err");
 });
 document.getElementById("download").addEventListener("click",function(){
   var blob=new Blob([JSON.stringify(clean(),null,2)],{type:"application/json"});
@@ -507,6 +515,77 @@ document.getElementById("download").addEventListener("click",function(){
 document.getElementById("reload").addEventListener("click",function(){
   if(!confirm("Discard what is on screen and reload from the live content.json?")) return;
   store(LS_KEY,null); fetchLive();
+});
+
+/* ---------- the song ---------- */
+var pendingAudio=null;   // kept in memory only, never saved into content.json or the draft
+var AUDIO_OK=/\.(mp3|m4a|aac|wav|ogg|oga|opus)$/i;
+
+function slug(n){ return n.replace(/\.[^.]+$/,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"our-song"; }
+function mb(b){ return (b/1048576).toFixed(1)+" MB"; }
+
+function pickAudio(file){
+  if(!file) return;
+  var ext=(file.name.match(/\.[^.]+$/)||[""])[0];
+  if(!AUDIO_OK.test(file.name)){
+    log("That file type will not play in a browser. Use mp3, m4a, wav or ogg.","err"); return;
+  }
+  if(file.size>45*1048576){
+    log("That file is "+mb(file.size)+", which is too big to push through GitHub this way. Trim it or export a smaller mp3.","err"); return;
+  }
+  var r=new FileReader();
+  r.onload=function(){
+    pendingAudio={ path:"music/"+slug(file.name)+ext.toLowerCase(), data:String(r.result).split(",")[1], size:file.size, name:file.name };
+    els["f-music-url"].value=pendingAudio.path;
+    if(!els["f-music-title"].value.trim()) els["f-music-title"].value="Play our song";
+    els["music-status"].innerHTML='<span class="pill">Ready to upload</span> '+esc(file.name)+" &middot; "+mb(file.size)+" &rarr; "+esc(pendingAudio.path);
+    log("Song ready: "+file.name+" ("+mb(file.size)+"). It uploads when you press Publish.","ok");
+    if(file.size>12*1048576) log("Heads up: "+mb(file.size)+" is a slow download on mobile data. A 128 kbps mp3 is plenty for a web page.");
+  };
+  r.onerror=function(){ log("Could not read that file.","err"); };
+  r.readAsDataURL(file);
+}
+els["file-music"].addEventListener("change",function(){ pickAudio(els["file-music"].files[0]); els["file-music"].value=""; });
+els["drop-music"].addEventListener("click",function(){ els["file-music"].click(); });
+["dragenter","dragover"].forEach(function(ev){
+  els["drop-music"].addEventListener(ev,function(e){ e.preventDefault(); this.classList.add("over"); });
+});
+["dragleave","drop"].forEach(function(ev){
+  els["drop-music"].addEventListener(ev,function(e){ e.preventDefault(); this.classList.remove("over"); });
+});
+els["drop-music"].addEventListener("drop",function(e){
+  if(e.dataTransfer&&e.dataTransfer.files) pickAudio(e.dataTransfer.files[0]);
+});
+document.getElementById("clear-music").addEventListener("click",function(){
+  pendingAudio=null; els["f-music-url"].value=""; els["music-status"].textContent="";
+  log("Song removed. Publish to take the button off the site.");
+});
+
+/* ---------- music check ---------- */
+document.getElementById("test-music").addEventListener("click",function(){
+  var u=els["f-music-url"].value.trim();
+  if(!u){ log("Put a path or link in the music field first.","err"); return; }
+  if(/youtu\.be|youtube\.com|spotify\.com|soundcloud\.com|music\.apple\.com|deezer\.com|tidal\.com/i.test(u)){
+    log("That is a streaming page, not an audio file, so the site has nothing to play. Upload an .mp3 into a music folder in the repo and put music/your-file.mp3 here instead.","err");
+    return;
+  }
+  log("Testing "+u+" \u2026");
+  var a=new Audio(), done=false;
+  var t=setTimeout(function(){ if(!done){done=true;log("Still nothing after 10 seconds. A very large file can do that; otherwise the path is wrong.","err");} },10000);
+  a.addEventListener("loadedmetadata",function(){
+    if(done) return; done=true; clearTimeout(t);
+    log("Found it, and it plays. Length "+(a.duration?Math.round(a.duration)+" seconds":"unknown")+".","ok");
+  });
+  a.addEventListener("error",function(){
+    if(done) return; done=true; clearTimeout(t);
+    var c=a.error&&a.error.code;
+    log(c===3
+      ? "The file was found but will not decode. Re-save it as a standard .mp3 and upload it again."
+      : "Nothing playable at that path. Two usual culprits: the file has not been uploaded to the repo yet, or the capitals do not match \u2014 GitHub treats Music/ and music/ as different folders.","err");
+  });
+  a.preload="metadata";
+  a.src=u.replace(/ /g,"%20");
+  a.load();
 });
 
 /* ---------- publish ---------- */
@@ -537,6 +616,43 @@ function put(path,b64,message,branch,sha){
   });
 }
 
+function gitApi(path,opts){
+  var o=els["gh-owner"].value.trim(), r=els["gh-repo"].value.trim(), t=els["gh-token"].value.trim();
+  return fetch("https://api.github.com/repos/"+o+"/"+r+"/git/"+path,
+    Object.assign({headers:{
+      "Authorization":"Bearer "+t,
+      "Accept":"application/vnd.github+json",
+      "X-GitHub-Api-Version":"2022-11-28"
+    }},opts||{})).then(function(res){
+      return res.json().then(function(j){
+        if(!res.ok) throw new Error((j&&j.message)||("GitHub said "+res.status));
+        return j;
+      });
+    });
+}
+/* Files over about a megabyte need the git data API rather than a plain contents PUT. */
+function putBig(path,b64,message,branch){
+  var refPath="refs/heads/"+branch, headSha, treeSha, blobSha;
+  return gitApi("ref/heads/"+encodeURIComponent(branch)).then(function(ref){
+    headSha=ref.object.sha;
+    return gitApi("commits/"+headSha);
+  }).then(function(commit){
+    treeSha=commit.tree.sha;
+    return gitApi("blobs",{method:"POST",body:JSON.stringify({content:b64,encoding:"base64"})});
+  }).then(function(blob){
+    blobSha=blob.sha;
+    return gitApi("trees",{method:"POST",body:JSON.stringify({
+      base_tree:treeSha, tree:[{path:path,mode:"100644",type:"blob",sha:blobSha}]
+    })});
+  }).then(function(tree){
+    return gitApi("commits",{method:"POST",body:JSON.stringify({
+      message:message, tree:tree.sha, parents:[headSha]
+    })});
+  }).then(function(commit){
+    return gitApi(refPath,{method:"PATCH",body:JSON.stringify({sha:commit.sha})});
+  });
+}
+
 var busy=false;
 function publish(){
   if(busy) return;
@@ -561,6 +677,17 @@ function publish(){
     });
   });
 
+  if(pendingAudio){
+    chain=chain.then(function(){
+      log("Uploading "+pendingAudio.path+" ("+mb(pendingAudio.size)+") \u2026 this one takes a moment.");
+      return putBig(pendingAudio.path,pendingAudio.data,"Add "+pendingAudio.path,branch).then(function(){
+        log("Uploaded "+pendingAudio.path,"ok");
+        els["music-status"].innerHTML='<span class="pill">On the site</span> '+esc(pendingAudio.path);
+        pendingAudio=null;
+      });
+    });
+  }
+
   chain.then(function(){
     var body=JSON.stringify(clean(),null,2);
     return getSha("content.json",branch).then(function(sha){
@@ -580,7 +707,7 @@ document.getElementById("publish").addEventListener("click",publish);
 document.getElementById("publish2").addEventListener("click",publish);
 
 window.addEventListener("beforeunload",function(e){
-  var pending=(state&&state.photos||[]).some(function(p){return p._data;});
+  var pending=pendingAudio||(state&&state.photos||[]).some(function(p){return p._data;});
   if(pending){ e.preventDefault(); e.returnValue=""; }
 });
 
