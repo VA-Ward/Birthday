@@ -1,5 +1,5 @@
 {
-  "name": "My Love",
+  "name": "Jebelyn Mediano",
   "monogram": "M",
   "eyebrow": "The third of August",
   "birthday": "2026-08-03",
@@ -15,19 +15,57 @@
     "signature": "Yours, always"
   },
   "photos": [
-    { "src": "", "motif": "sprig", "caption": "Add your photos here — they will appear in this wheel." },
-    { "src": "", "motif": "moon", "caption": "Every late night that turned into morning." },
-    { "src": "", "motif": "rose", "caption": "The one where you were laughing." },
-    { "src": "", "motif": "swallow", "caption": "Somewhere we said we would go back to." },
-    { "src": "", "motif": "ring", "caption": "And all the ones still to come." }
+    {
+      "src": "",
+      "motif": "sprig",
+      "caption": "Add your photos here — they will appear in this wheel."
+    },
+    {
+      "src": "",
+      "motif": "moon",
+      "caption": "Every late night that turned into morning."
+    },
+    {
+      "src": "",
+      "motif": "rose",
+      "caption": "The one where you were laughing."
+    },
+    {
+      "src": "",
+      "motif": "swallow",
+      "caption": "Somewhere we said we would go back to."
+    },
+    {
+      "src": "",
+      "motif": "ring",
+      "caption": "And all the ones still to come."
+    }
   ],
   "quotes": [
-    { "text": "I did not fall in love with you. I walked in, and never once looked for the door.", "source": "" },
-    { "text": "You pierce my soul.", "source": "Jane Austen, Persuasion" },
-    { "text": "Of all the ordinary days there have ever been, the best one is the one with you in it.", "source": "" },
-    { "text": "He's more myself than I am.", "source": "Emily Brontë, Wuthering Heights" },
-    { "text": "Every road I ever took was quietly on its way to you.", "source": "" },
-    { "text": "If loving you is a habit, then let me never be cured of it.", "source": "" }
+    {
+      "text": "I did not fall in love with you. I walked in, and never once looked for the door.",
+      "source": ""
+    },
+    {
+      "text": "You pierce my soul.",
+      "source": "Jane Austen, Persuasion"
+    },
+    {
+      "text": "Of all the ordinary days there have ever been, the best one is the one with you in it.",
+      "source": ""
+    },
+    {
+      "text": "He's more myself than I am.",
+      "source": "Emily Brontë, Wuthering Heights"
+    },
+    {
+      "text": "Every road I ever took was quietly on its way to you.",
+      "source": ""
+    },
+    {
+      "text": "If loving you is a habit, then let me never be cured of it.",
+      "source": ""
+    }
   ],
   "reasonsTitle": "Twenty-six reasons",
   "reasons": [
@@ -59,10 +97,26 @@
     "That out of everyone there has ever been, it is you."
   ],
   "story": [
-    { "when": "The beginning", "title": "The day everything quietly changed", "text": "Edit this in the admin page — put the day you met here, and what you remember about it." },
-    { "when": "Early days", "title": "The first trip away", "text": "A moment from your first year together. Where you went, what went wrong, why it was perfect anyway." },
-    { "when": "Somewhere along the way", "title": "It stopped being new", "text": "The point it turned from exciting into steady — and how much better steady turned out to be." },
-    { "when": "3 August", "title": "Twenty-six", "text": "And here we are. Same person, more years, more sure than ever." }
+    {
+      "when": "The beginning",
+      "title": "The day everything quietly changed",
+      "text": "Edit this in the admin page — put the day you met here, and what you remember about it."
+    },
+    {
+      "when": "Early days",
+      "title": "The first trip away",
+      "text": "A moment from your first year together. Where you went, what went wrong, why it was perfect anyway."
+    },
+    {
+      "when": "Somewhere along the way",
+      "title": "It stopped being new",
+      "text": "The point it turned from exciting into steady — and how much better steady turned out to be."
+    },
+    {
+      "when": "3 August",
+      "title": "Twenty-six",
+      "text": "And here we are. Same person, more years, more sure than ever."
+    }
   ],
   "wish": {
     "lightHint": "Light it",
@@ -71,5 +125,8 @@
     "done": "Happy birthday. Here is to every year after this one."
   },
   "closing": "Made by hand, for you.",
-  "music": { "url": "", "title": "Play music" }
+  "music": {
+    "url": "music.mp3",
+    "title": "Play music"
+  }
 }
