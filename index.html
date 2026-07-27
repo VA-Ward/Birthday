@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Happy Birthday</title>
+<meta name="description" content="A little corner of the internet, made for one person only.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Happy Birthday">
+<meta property="og:description" content="A little corner of the internet, made for one person only.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23150C1C'/%3E%3Cpath d='M16 7l5 9-5 9-5-9z' fill='%23E4C089'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Jost:wght@200;300;400;500&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="motes" aria-hidden="true"></canvas>
+<canvas id="dust" aria-hidden="true"></canvas>
+
+<button id="music-toggle" class="music-toggle" hidden aria-pressed="false">
+  <span class="music-icon" aria-hidden="true"></span><span id="music-label">Play music</span>
+</button>
+
+<!-- 1. HERO -->
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <p class="eyebrow" id="hero-eyebrow">The third of August</p>
+    <h1 class="hero-name" id="hero-name">My Love</h1>
+    <div class="hero-rule" aria-hidden="true"><i></i><span class="diamond"></span><i></i></div>
+    <p class="hero-line" id="hero-line"></p>
+    <div class="counter" id="counter" aria-live="polite">
+      <div class="counter-grid" id="counter-grid"></div>
+      <p class="counter-caption" id="counter-caption"></p>
+    </div>
+    <a class="scroll-cue" href="#letter"><span>Begin</span><i aria-hidden="true"></i></a>
+  </div>
+</header>
+
+<div class="thread" aria-hidden="true"><span class="diamond"></span></div>
+
+<!-- 2. THE LETTER -->
+<section class="section" id="letter">
+  <p class="eyebrow">Sealed for you</p>
+  <h2 class="section-title">A letter</h2>
+  <div class="envelope-stage">
+    <button class="envelope" id="envelope" aria-expanded="false" aria-controls="letter-paper">
+      <span class="env-back" aria-hidden="true"></span>
+      <span class="env-flap" aria-hidden="true"></span>
+      <span class="env-front" aria-hidden="true"></span>
+      <span class="seal" aria-hidden="true"><b id="seal-mono">M</b></span>
+      <span class="env-hint">Break the seal</span>
+    </button>
+    <article class="paper" id="letter-paper" hidden>
+      <p class="paper-greeting" id="letter-greeting"></p>
+      <div id="letter-body"></div>
+      <p class="paper-sign" id="letter-sign"></p>
+    </article>
+  </div>
+</section>
+
+<div class="thread" aria-hidden="true"><span class="diamond"></span></div>
+
+<!-- 3. PHOTO WHEEL -->
+<section class="section wide" id="gallery">
+  <p class="eyebrow">Turn it slowly</p>
+  <h2 class="section-title">The wheel of us</h2>
+  <p class="section-sub">Drag to spin, or use the arrows.</p>
+  <div class="wheel-stage" id="wheel-stage" tabindex="0" role="group" aria-label="Photo wheel. Use left and right arrow keys to turn.">
+    <div class="wheel" id="wheel"></div>
+  </div>
+  <div class="wheel-controls">
+    <button class="round-btn" id="wheel-prev" aria-label="Previous photo">&#8249;</button>
+    <p class="wheel-caption" id="wheel-caption" aria-live="polite"></p>
+    <button class="round-btn" id="wheel-next" aria-label="Next photo">&#8250;</button>
+  </div>
+</section>
+
+<div class="thread" aria-hidden="true"><span class="diamond"></span></div>
+
+<!-- 4. QUOTE INTERLUDE -->
+<section class="section quote-band" id="quotes">
+  <blockquote class="quote" id="quote">
+    <p class="quote-text" id="quote-text"></p>
+    <footer class="quote-source" id="quote-source"></footer>
+  </blockquote>
+  <div class="dots" id="quote-dots"></div>
+</section>
+
+<div class="thread" aria-hidden="true"><span class="diamond"></span></div>
+
+<!-- 5. 26 REASONS -->
+<section class="section wide" id="reasons">
+  <p class="eyebrow">One for every year</p>
+  <h2 class="section-title" id="reasons-title">Twenty-six reasons</h2>
+  <p class="section-sub">Tap a number.</p>
+  <div class="reasons-grid" id="reasons-grid"></div>
+</section>
+
+<div class="thread" aria-hidden="true"><span class="diamond"></span></div>
+
+<!-- 6. OUR STORY -->
+<section class="section" id="story">
+  <p class="eyebrow">How we got here</p>
+  <h2 class="section-title">Our story, so far</h2>
+  <ol class="timeline" id="timeline"></ol>
+</section>
+
+<div class="thread" aria-hidden="true"><span class="diamond"></span></div>
+
+<!-- 7. THE WISH -->
+<section class="section" id="wish">
+  <p class="eyebrow">Last thing</p>
+  <h2 class="section-title">Make a wish</h2>
+  <div class="candle-stage">
+    <button class="candle" id="candle" aria-pressed="false">
+      <span class="flame" aria-hidden="true"><i></i></span>
+      <span class="smoke" aria-hidden="true"></span>
+      <span class="wick" aria-hidden="true"></span>
+      <span class="wax" aria-hidden="true"></span>
+      <span class="candle-hint" id="candle-hint">Light it</span>
+    </button>
+    <p class="wish-text" id="wish-text"></p>
+    <button class="ghost-btn" id="blow" hidden>Blow it out</button>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="hero-rule" aria-hidden="true"><i></i><span class="diamond"></span><i></i></div>
+  <p id="closing"></p>
+  <a class="top-link" href="#top">Back to the beginning</a>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
