@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<p class="preview-flag" id="preview-flag" hidden>Preview &middot; still sealed for everyone else</p>
 <canvas id="motes" aria-hidden="true"></canvas>
 <canvas id="dust" aria-hidden="true"></canvas>
 
@@ -34,7 +35,12 @@
       <div class="counter-grid" id="counter-grid"></div>
       <p class="counter-caption" id="counter-caption"></p>
     </div>
-    <a class="scroll-cue" href="#letter"><span>Begin</span><i aria-hidden="true"></i></a>
+    <div class="sealed" id="sealed" hidden>
+      <span class="sealed-mark" aria-hidden="true"><b id="sealed-mono">M</b></span>
+      <span class="sealed-note" id="sealed-note">Sealed until then</span>
+    </div>
+    <a class="scroll-cue" href="#letter" id="scroll-cue"><span>Begin</span><i aria-hidden="true"></i></a>
+    <p class="seal-note" id="seal-note" hidden></p>
   </div>
 </header>
 

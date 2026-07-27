@@ -110,6 +110,49 @@ body::after{
 @keyframes drip{0%,100%{transform:scaleY(.4);opacity:.4}50%{transform:scaleY(1);opacity:1}}
 .scroll-cue i{transform-origin:top}
 
+/* ---------- sealed state ---------- */
+.seal-note{
+  max-width:34ch;margin:3rem auto 0;font-size:.86rem;line-height:1.9;
+  color:rgba(235,214,220,.62);letter-spacing:.04em;
+}
+.seal-note b{
+  display:block;font-family:var(--body);font-weight:400;font-size:.62rem;letter-spacing:.4em;
+  text-transform:uppercase;color:var(--champagne);margin-bottom:.9rem;
+}
+.preview-flag{
+  position:fixed;top:0;left:50%;translate:-50%;z-index:6;pointer-events:none;
+  background:rgba(21,12,28,.86);border:1px solid var(--hair);border-top:0;
+  border-radius:0 0 3px 3px;padding:.5rem 1.1rem;
+  font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;color:var(--champagne);
+}
+body.sealed .site-footer{display:none}
+body.sealed .scroll-cue{display:none}
+body.sealed .hero{min-height:100svh}
+
+/* ---------- sealed state ---------- */
+.preview-flag{
+  position:fixed;left:50%;top:0;translate:-50% 0;z-index:6;margin:0;
+  background:rgba(21,12,28,.85);backdrop-filter:blur(8px);
+  border:1px solid var(--hair);border-top:0;border-radius:0 0 3px 3px;
+  padding:.45rem 1.1rem;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--champagne);
+}
+.sealed{display:grid;place-items:center;gap:1.1rem;margin-top:3.4rem}
+.sealed-mark{
+  width:62px;height:62px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#8E2A45,#5E1A33 60%,#3E0F22);
+  box-shadow:0 10px 26px rgba(0,0,0,.6),inset 0 0 0 1px rgba(228,192,137,.35);
+  animation:breathe 4.5s ease-in-out infinite;
+}
+.sealed-mark b{font-family:var(--display);font-size:1.4rem;font-weight:400;color:var(--champagne-lift)}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+.sealed-note{font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:var(--champagne);opacity:.75}
+body.locked .thread,
+body.locked .section,
+body.locked .site-footer,
+body.locked #scroll-cue{display:none}
+body.locked .hero{min-height:100svh}
+body.unsealing .hero-line{animation:rise .9s ease both}
+
 /* ---------- envelope + letter ---------- */
 .envelope-stage{
   display:grid;grid-template-areas:"stack";place-items:center;

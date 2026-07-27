@@ -96,7 +96,7 @@ button.danger{color:#E39;border-color:rgba(238,120,160,.35)}
       <span class="count" id="draft-note"></span>
     </div>
     <div class="actions">
-      <a href="index.html" target="_blank">View site &#8599;</a>
+      <a href="index.html?preview" target="_blank">Preview site &#8599;</a>
     </div>
   </div>
 
@@ -140,6 +140,26 @@ button.danger{color:#E39;border-color:rgba(238,120,160,.35)}
       <div><label for="f-closing">Footer line</label><input id="f-closing"></div>
       <div><label for="f-reasons-title">Reasons heading</label><input id="f-reasons-title"></div>
     </div>
+  </section>
+
+  <!-- THE SEAL -->
+  <section class="card">
+    <h2>The seal</h2>
+    <p class="hint">Keeps the whole page hidden until the moment you choose. She sees her name, the countdown and nothing else.</p>
+    <div class="actions" style="margin-bottom:1rem">
+      <label style="display:flex;gap:.6rem;align-items:center;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--silk)">
+        <input type="checkbox" id="f-locked" style="width:auto"> Keep everything sealed until it opens
+      </label>
+    </div>
+    <div class="row two">
+      <div><label for="f-unlock-date">Opens on</label><input id="f-unlock-date" type="date"></div>
+      <div><label for="f-unlock-time">At</label><input id="f-unlock-time" type="time"></div>
+    </div>
+    <div class="row">
+      <div><label for="f-locked-line">Line shown while it is sealed</label><input id="f-locked-line"></div>
+    </div>
+    <p class="hint" id="unlock-note" style="margin:0 0 1rem"></p>
+    <p class="warn">It opens on <b>her</b> clock, wherever she is, and unwraps itself on screen if she already has the page open. <b>Preview site</b> up the top always shows you everything.<br><br>Fair warning: this hides the page, it does not encrypt it. Someone who knows to open <b>content.json</b> in the repo could still read the words. Plenty for a surprise, not a safe.</p>
   </section>
 
   <!-- LETTER -->
@@ -207,6 +227,30 @@ button.danger{color:#E39;border-color:rgba(238,120,160,.35)}
     <p class="warn">Only use a song you own a copy of. Drop the file above and it gets uploaded with everything else when you publish &mdash; you never need to touch GitHub. A Spotify or YouTube link will not work: those are web pages, not audio files.</p>
   </section>
 
+  <!-- LOCK -->
+  <section class="card">
+    <h2>Keep it sealed</h2>
+    <p class="hint">While this is on, anyone opening the link sees only her name and the countdown. The letter, photos, reasons, timeline and candle are not put on the page at all until the moment below, then it opens itself.</p>
+    <div class="actions" style="margin-bottom:1rem">
+      <label style="display:flex;gap:.6rem;align-items:center;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--silk)">
+        <input type="checkbox" id="f-lock-on" style="width:auto"> Sealed until the countdown ends
+      </label>
+    </div>
+    <div class="row two">
+      <div><label for="f-lock-reveal">Opens at</label><input id="f-lock-reveal" type="datetime-local"></div>
+      <div><label for="f-lock-preview">Check it yourself</label>
+        <div class="actions" style="padding-top:.35rem">
+          <a href="index.html" target="_blank" id="f-lock-preview" style="color:var(--champagne);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;text-decoration:none">Sealed view &#8599;</a>
+          <a href="index.html?preview=1" target="_blank" style="color:var(--champagne);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;text-decoration:none">Unlocked view &#8599;</a>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div><label for="f-lock-note">What she reads while she waits</label><textarea id="f-lock-note" style="min-height:96px"></textarea></div>
+    </div>
+    <p class="warn">This stops her seeing the page early, not a determined snoop &mdash; the words still sit in <b>content.json</b> in a public repo, and anyone who thinks to open that file can read them. If you want it airtight, leave the letter blank until the morning and publish it then.</p>
+  </section>
+
   <!-- PUBLISH -->
   <section class="card">
     <h2>Publish</h2>
@@ -228,7 +272,8 @@ var state=null;
 var els={};
 ["gh-owner","gh-repo","gh-branch","gh-token","remember","f-name","f-mono","f-eyebrow","f-birthday",
  "f-heroline","f-closing","f-reasons-title","f-greeting","f-signature","f-letter","f-reasons",
- "f-wish-lit","f-wish-done","f-music-url","f-music-title","photos","quotes","story","log","file","drop","file-music","drop-music","music-status",
+ "f-locked","f-unlock-date","f-unlock-time","f-locked-line","unlock-note",
+ "f-wish-lit","f-wish-done","f-music-url","f-music-title","photos","quotes","story","log","file","drop","file-music","drop-music","music-status","f-lock-on","f-lock-reveal","f-lock-note",
  "photo-count","quote-count","reason-count","story-count","draft-note"].forEach(function(id){
   els[id]=document.getElementById(id);
 });
@@ -255,8 +300,10 @@ var BLANK={
   name:"My Love",monogram:"M",eyebrow:"The third of August",birthday:"2026-08-03",age:26,
   heroLine:"",letter:{greeting:"",body:[],signature:""},photos:[],quotes:[],
   reasonsTitle:"Twenty-six reasons",reasons:[],story:[],
+  locked:false,unlockAt:"",lockedLine:"Everything here is sealed until the day itself.",
+  lockedNote:"Sealed until then",lockedCaption:"until it opens",
   wish:{lightHint:"Light it",blowHint:"Blow it out",lit:"",done:""},
-  closing:"",music:{url:"",title:""}
+  closing:"",music:{url:"",title:""},lock:{enabled:true,reveal:"",note:""}
 };
 
 function loadConf(){
@@ -300,6 +347,7 @@ function normalise(){
   if(!Array.isArray(state.letter.body)) state.letter.body=[];
   if(!state.wish||typeof state.wish!=="object") state.wish={};
   if(!state.music||typeof state.music!=="object") state.music={url:"",title:""};
+  if(!state.lock||typeof state.lock!=="object") state.lock={enabled:true,reveal:"",note:""};
 }
 function fill(){
   normalise();
@@ -314,10 +362,19 @@ function fill(){
   els["f-signature"].value=(state.letter&&state.letter.signature)||"";
   els["f-letter"].value=((state.letter&&state.letter.body)||[]).join("\n\n");
   els["f-reasons"].value=(state.reasons||[]).join("\n");
+  els["f-locked"].checked=state.locked===true;
+  var ua=String(state.unlockAt||"");
+  els["f-unlock-date"].value=ua.slice(0,10)||state.birthday||"";
+  els["f-unlock-time"].value=ua.slice(11,16)||"00:00";
+  els["f-locked-line"].value=state.lockedLine||"";
+  unlockNote();
   els["f-wish-lit"].value=(state.wish&&state.wish.lit)||"";
   els["f-wish-done"].value=(state.wish&&state.wish.done)||"";
   els["f-music-url"].value=(state.music&&state.music.url)||"";
   els["f-music-title"].value=(state.music&&state.music.title)||"";
+  els["f-lock-on"].checked=state.lock.enabled!==false;
+  els["f-lock-reveal"].value=(state.lock.reveal||"").slice(0,16);
+  els["f-lock-note"].value=state.lock.note||"";
   drawPhotos(); drawQuotes(); drawStory(); counts();
 }
 function collect(){
@@ -338,6 +395,11 @@ function collect(){
     lit:els["f-wish-lit"].value.trim(), done:els["f-wish-done"].value.trim()
   });
   state.music={url:els["f-music-url"].value.trim(),title:els["f-music-title"].value.trim()||"Play music"};
+  state.lock={
+    enabled:els["f-lock-on"].checked,
+    reveal:els["f-lock-reveal"].value.trim()||state.birthday+"T00:00",
+    note:els["f-lock-note"].value.trim()
+  };
   return state;
 }
 function counts(){
@@ -347,6 +409,24 @@ function counts(){
   els["reason-count"].textContent=els["f-reasons"].value.split("\n").filter(function(s){return s.trim();}).length;
 }
 els["f-reasons"].addEventListener("input",counts);
+
+function unlockNote(){
+  var n=els["unlock-note"];
+  if(!els["f-locked"].checked){ n.textContent="Unsealed — the whole page is visible to anyone with the link right now."; return; }
+  var d=els["f-unlock-date"].value, t=els["f-unlock-time"].value||"00:00";
+  if(!d){ n.textContent="Pick a date, or it falls back to her birthday at midnight."; return; }
+  var when=new Date(d+"T"+t);
+  if(isNaN(when.getTime())){ n.textContent="That date and time did not make sense."; return; }
+  var pretty=when.toLocaleString(undefined,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"});
+  var mins=Math.round((when-new Date())/60000);
+  n.textContent = mins>0
+    ? "Opens "+pretty+" — about "+(mins>2880?Math.round(mins/1440)+" days":(mins>120?Math.round(mins/60)+" hours":mins+" minutes"))+" away."
+    : "That moment has already passed, so the page is open now.";
+}
+["f-locked","f-unlock-date","f-unlock-time"].forEach(function(id){
+  els[id].addEventListener("change",unlockNote);
+  els[id].addEventListener("input",unlockNote);
+});
 
 /* ---------- photos ---------- */
 var MOTIFS=["sprig","moon","rose","swallow","ring"];
@@ -687,6 +767,15 @@ function publish(){
       });
     });
   }
+
+  chain=chain.then(function(){
+    if(els["f-lock-on"].checked){
+      var r=els["f-lock-reveal"].value.trim()||(els["f-birthday"].value+"T00:00");
+      log("Staying sealed until "+r.replace("T"," ")+" (visitor's own clock).");
+    } else {
+      log("Not sealed \u2014 the whole page is readable as soon as this publishes.");
+    }
+  });
 
   chain.then(function(){
     var body=JSON.stringify(clean(),null,2);

@@ -81,8 +81,18 @@
       lit: "Make a wish. I will help you keep it.",
       done: "Happy birthday. Here is to every year after this one."
     },
+    locked: false,
+    unlockAt: "",
+    lockedLine: "Everything here is sealed until the day itself.",
+    lockedNote: "Sealed until then",
+    lockedCaption: "until it opens",
     closing: "Made by hand, for you.",
-    music: { url: "", title: "Play music" }
+    music: { url: "", title: "Play music" },
+    lock: {
+      enabled: true,
+      reveal: "2026-08-03T00:00",
+      note: "There is a whole page behind this one \u2014 a letter, photographs, twenty-six reasons and a candle to blow out. It opens by itself the moment it turns to the third. Come back then."
+    }
   };
 
   var MOTIFS = {
@@ -131,9 +141,35 @@
     $("hero-name").textContent = C.name;
     $("hero-eyebrow").textContent = C.eyebrow;
     $("hero-line").textContent = C.heroLine;
-    $("seal-mono").textContent = (C.monogram || C.name || "M").charAt(0).toUpperCase();
     $("closing").textContent = C.closing;
+    var initial = (C.monogram || C.name || "M").charAt(0).toUpperCase();
+    $("seal-mono").textContent = initial;
+    $("sealed-mono").textContent = initial;
 
+    var preview = /(^|[?&#])preview\b/.test(location.search + location.hash);
+    var unlockAt = unlockTime(C);
+    var locked = C.locked === true && !!unlockAt && Date.now() < unlockAt.getTime() && !preview;
+
+    if (preview && C.locked === true && unlockAt && Date.now() < unlockAt.getTime()) {
+      $("preview-flag").hidden = false;
+    }
+
+    motes();
+
+    if (locked) {
+      document.body.classList.add("locked");
+      $("hero-line").textContent = C.lockedLine || "Sealed until the day itself.";
+      $("sealed-note").textContent = C.lockedNote || "Sealed until then";
+      $("sealed").hidden = false;
+      countdown(C, unlockAt, true, function () { unseal(C); });
+    } else {
+      countdown(C, unlockAt, false, null);
+      openUp(C);
+    }
+  }
+
+  /* everything below the hero — only built once the page is open */
+  function openUp(C) {
     buildLetter(C);
     buildWheel(C);
     buildQuotes(C);
@@ -141,9 +177,28 @@
     buildStory(C);
     buildWish(C);
     buildMusic(C);
-    countdown(C);
     revealSections();
-    motes();
+  }
+
+  function unseal(C) {
+    document.body.classList.remove("locked");
+    document.body.classList.add("unsealing");
+    $("sealed").hidden = true;
+    $("hero-line").textContent = C.heroLine;
+    openUp(C);
+    goldBurst();
+  }
+
+  /* the exact moment it opens: a set time if given, otherwise midnight on the day */
+  function unlockTime(C) {
+    if (C.unlockAt && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(C.unlockAt)) {
+      var d = new Date(String(C.unlockAt).replace(" ", "T"));
+      if (!isNaN(d.getTime())) return d;
+    }
+    var p = String(C.birthday || "").split("-");
+    if (p.length < 3) return null;
+    var b = new Date(+p[0], +p[1] - 1, +p[2], 0, 0, 0);
+    return isNaN(b.getTime()) ? null : b;
   }
 
   /* ---------------- letter ---------------- */
@@ -379,58 +434,97 @@
   }
 
   /* ---------------- music ---------------- */
+  var STREAM = /youtu\.be|youtube\.com|spotify\.com|soundcloud\.com|music\.apple\.com|deezer\.com|tidal\.com/i;
+
   function buildMusic(C) {
     if (!C.music || !C.music.url) return;
     var btn = $("music-toggle"), label = $("music-label");
-    var audio = new Audio(C.music.url);
-    audio.loop = true; audio.volume = 0.55;
+    var raw = String(C.music.url).trim();
+    var title = C.music.title || "Play music";
     btn.hidden = false;
-    label.textContent = C.music.title || "Play music";
+    label.textContent = title;
+
+    // A link to a streaming page is a web page, not an audio file — nothing to play.
+    if (STREAM.test(raw)) {
+      label.textContent = "Needs an audio file";
+      btn.title = "Streaming links cannot play here. Upload an .mp3 to the repo and use its path, e.g. music/our-song.mp3";
+      return;
+    }
+
+    var audio = new Audio();
+    audio.loop = true;
+    audio.volume = 0.55;
+    audio.preload = "metadata";
+    audio.src = raw.replace(/ /g, "%20");   // spaces in filenames need escaping
+
+    var problem = "";
+    audio.addEventListener("error", function () {
+      var code = audio.error && audio.error.code;
+      problem = code === 3 ? "That file will not decode" : "Track not found at that path";
+      btn.title = code === 3
+        ? "Re-save it as a standard .mp3 and upload again."
+        : "Check the path, and check the capitals — GitHub treats Music/ and music/ as different folders.";
+      label.textContent = problem;
+    });
+
     btn.addEventListener("click", function () {
+      if (problem) { label.textContent = problem; return; }
       if (audio.paused) {
         audio.play().then(function () {
           btn.setAttribute("aria-pressed", "true");
           label.textContent = "Pause music";
-        }).catch(function () { label.textContent = "Music unavailable"; });
+        }).catch(function (err) {
+          label.textContent = (err && err.name === "NotAllowedError") ? "Tap once more" : (problem || "Track will not play");
+        });
       } else {
         audio.pause();
         btn.setAttribute("aria-pressed", "false");
-        label.textContent = C.music.title || "Play music";
+        label.textContent = title;
       }
     });
   }
 
   /* ---------------- countdown ---------------- */
-  function countdown(C) {
+  function countdown(C, unlockAt, locked, onOpen) {
     var grid = $("counter-grid"), cap = $("counter-caption");
     var parts = String(C.birthday || "").split("-");
     var m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
-    if (!m || !d) { $("counter").hidden = true; return; }
+    if (!m || !d) { if (!locked) { $("counter").hidden = true; return; } }
 
-    function render() {
-      var now = new Date();
-      var isToday = now.getMonth() + 1 === m && now.getDate() === d;
-      if (isToday) {
-        grid.innerHTML = "";
-        cap.className = "counter-caption today";
-        cap.textContent = "It is today. Happy birthday, " + C.name + ".";
-        if (!cap.dataset.fired) { cap.dataset.fired = "1"; setTimeout(goldBurst, 700); }
-        return;
-      }
-      var year = now.getFullYear();
-      var next = new Date(year, m - 1, d, 0, 0, 0);
-      if (next < now) next = new Date(year + 1, m - 1, d, 0, 0, 0);
-      var ms = next - now;
+    function units(ms) {
       var days = Math.floor(ms / 864e5);
       var hrs = Math.floor(ms / 36e5) % 24;
       var min = Math.floor(ms / 6e4) % 60;
       var sec = Math.floor(ms / 1e3) % 60;
-      var units = [[days, "days"], [hrs, "hours"], [min, "minutes"], [sec, "seconds"]];
-      grid.innerHTML = units.map(function (u) {
+      return [[days, "days"], [hrs, "hours"], [min, "minutes"], [sec, "seconds"]];
+    }
+    function show(ms, caption) {
+      grid.innerHTML = units(Math.max(0, ms)).map(function (u) {
         return '<div class="unit"><b>' + String(u[0]).padStart(2, "0") + "</b><span>" + u[1] + "</span></div>";
       }).join("");
       cap.className = "counter-caption";
-      cap.textContent = "until the day itself";
+      cap.textContent = caption;
+    }
+    function celebrate() {
+      grid.innerHTML = "";
+      cap.className = "counter-caption today";
+      cap.textContent = "It is today. Happy birthday, " + C.name + ".";
+      if (!cap.dataset.fired) { cap.dataset.fired = "1"; setTimeout(goldBurst, 700); }
+    }
+
+    function render() {
+      var now = new Date();
+      if (locked && unlockAt && now.getTime() >= unlockAt.getTime()) {
+        locked = false;
+        if (onOpen) onOpen();
+      }
+      if (locked) { show(unlockAt - now, C.lockedCaption || "until it opens"); return; }
+      if (!m || !d) { $("counter").hidden = true; return; }
+      if (now.getMonth() + 1 === m && now.getDate() === d) { celebrate(); return; }
+      var y = now.getFullYear();
+      var next = new Date(y, m - 1, d, 0, 0, 0);
+      if (next < now) next = new Date(y + 1, m - 1, d, 0, 0, 0);
+      show(next - now, "until the day itself");
     }
     render();
     setInterval(render, 1000);
