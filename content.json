@@ -130,7 +130,7 @@
     "title": "Play music"
   },
   "lock": {
-    "enabled": true,
+    "enabled": false,
     "reveal": "2026-08-03T06:00",
     "note": "Please wait until further notice"
   }
