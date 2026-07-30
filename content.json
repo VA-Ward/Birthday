@@ -179,6 +179,11 @@
       "text": "I will give you\nmy time;\nhow I spent \nhours of it\nlike it wasn't mine;\nminutes felt like\nthey were made\njust to make\nyou smile;\nand \nseconds, \nwere like rhythm\nof my heart - \nit beats for you, \nsince dawn \n'til night."
     }
   ],
+  "locked": false,
+  "unlockAt": "",
+  "lockedLine": "Everything here is sealed until the day itself.",
+  "lockedNote": "Sealed until then",
+  "lockedCaption": "until it opens",
   "wish": {
     "lightHint": "Light it",
     "blowHint": "Blow it out",
@@ -191,7 +196,7 @@
     "title": "Play music"
   },
   "lock": {
-    "enabled": false,
+    "enabled": true,
     "reveal": "2026-08-03T06:00",
     "note": "Please wait until further notice"
   }
